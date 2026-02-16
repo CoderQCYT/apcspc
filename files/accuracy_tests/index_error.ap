@@ -1,0 +1,4 @@
+// Expected Output: List index out of bounds.
+
+nums ← [1, 2, 3]
+DISPLAY(nums[4])

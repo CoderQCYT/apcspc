@@ -1,0 +1,8 @@
+// Expected Output: 10
+
+sum ← 0
+REPEAT 5 TIMES
+{
+  sum ← sum + 2
+}
+DISPLAY(sum)

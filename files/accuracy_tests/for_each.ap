@@ -1,0 +1,11 @@
+// Expected Output: 20
+
+nums ← [2, 4, 6, 8]
+total ← 0
+
+FOR EACH n IN nums
+{
+  total ← total + n
+}
+
+DISPLAY(total)

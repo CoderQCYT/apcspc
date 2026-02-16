@@ -1,0 +1,179 @@
+DISPLAY("\x1B[1m==== AP CSP INTERPRETER VALIDATION SCRIPT ====\x1B[0m")
+
+DISPLAY("\n\x1B[36m-- Arithmetic & Precedence --\x1B[0m")
+a ← 5 + 2 * 3
+b ← (5 + 2) * 3
+c ← 17 / 5
+d ← 17 MOD 5
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m11 21 3.4 2\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(a)
+DISPLAY(b)
+DISPLAY(c)
+DISPLAY(d)
+
+DISPLAY("\n\x1B[36m-- Boolean Logic --\x1B[0m")
+x ← 10
+y ← 5
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32mtrue true true true\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(x > y)
+DISPLAY(NOT(x = y))
+DISPLAY((x > 5) AND (y < 10))
+DISPLAY((x < 5) OR (y = 5))
+
+DISPLAY("\n\x1B[36m-- IF / ELSE --\x1B[0m")
+n ← 7
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32modd\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+IF(n MOD 2 = 0)
+{
+  DISPLAY("even")
+}
+ELSE
+{
+  DISPLAY("odd")
+}
+
+DISPLAY("\n\x1B[36m-- REPEAT n TIMES --\x1B[0m")
+sum ← 0
+REPEAT 5 TIMES
+{
+  sum ← sum + 2
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m10\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(sum)
+
+DISPLAY("\n\x1B[36m-- REPEAT UNTIL --\x1B[0m")
+val ← 1
+REPEAT UNTIL(val > 10)
+{
+  val ← val * 2
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m16\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(val)
+
+DISPLAY("\n\x1B[36m-- List Basics --\x1B[0m")
+aList ← [10, 20, 30]
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m10 3 99\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(aList[1])
+DISPLAY(LENGTH(aList))
+aList[2] ← 99
+DISPLAY(aList[2])
+
+DISPLAY("\n\x1B[36m-- INSERT / APPEND / REMOVE --\x1B[0m")
+nums ← [1, 2, 3]
+APPEND(nums, 4)
+INSERT(nums, 2, 9)
+REMOVE(nums, 3)
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m1 9 3 4\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+FOR EACH item IN nums
+{
+  DISPLAY(item)
+}
+
+DISPLAY("\n\x1B[36m-- List Copy (No Aliasing) --\x1B[0m")
+original ← [1, 2, 3]
+copy ← original
+original[1] ← 99
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m1\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(copy[1])
+
+DISPLAY("\n\x1B[36m-- FOR EACH Accumulator --\x1B[0m")
+nums2 ← [2, 4, 6, 8]
+total ← 0
+FOR EACH n IN nums2
+{
+  total ← total + n
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m20\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(total)
+
+DISPLAY("\n\x1B[36m-- Procedure Without RETURN --\x1B[0m")
+PROCEDURE greet(name)
+{
+  DISPLAY("Hello")
+  DISPLAY(name)
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32mHello Akari\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+greet("Akari")
+
+DISPLAY("\n\x1B[36m-- Procedure With RETURN --\x1B[0m")
+PROCEDURE square(x)
+{
+  RETURN(x * x)
+}
+result ← square(5)
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m25\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(result)
+
+DISPLAY("\n\x1B[36m-- Early RETURN --\x1B[0m")
+PROCEDURE test(num)
+{
+  IF(num > 0)
+  {
+    RETURN("positive")
+  }
+  RETURN("not positive")
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32mpositive not positive\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(test(3))
+DISPLAY(test(-1))
+
+DISPLAY("\n\x1B[36m-- Nested Loops --\x1B[0m")
+count ← 0
+REPEAT 3 TIMES
+{
+  i ← 1
+  REPEAT UNTIL(i > 2)
+  {
+    count ← count + 1
+    i ← i + 1
+  }
+}
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m6\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(count)
+
+DISPLAY("\n\x1B[36m-- RANDOM Range Test (1–3) --\x1B[0m")
+rand ← RANDOM(1, 3)
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m1 OR 2 OR 3\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(rand)
+
+DISPLAY("\n\x1B[36m-- Recursive Fibonacci Test (1-7) --\x1B[0m")
+
+PROCEDURE fib(n)
+{
+  IF(n = 1)
+  {
+    RETURN(0)
+  }
+  IF(n = 2)
+  {
+    RETURN(1)
+  }
+  RETURN(fib(n - 1) + fib(n - 2))
+}
+
+DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m0 1 1 2 3 5 8\x1B[0m")
+DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
+DISPLAY(fib(1))
+DISPLAY(fib(2))
+DISPLAY(fib(3))
+DISPLAY(fib(4))
+DISPLAY(fib(5))
+DISPLAY(fib(6))
+DISPLAY(fib(7))
+
+
+DISPLAY("\n\x1B[1m==== END OF VALIDATION ====\x1B[0m")

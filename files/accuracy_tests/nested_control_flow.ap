@@ -1,0 +1,15 @@
+// Expected Output: 6
+
+count ← 0
+
+REPEAT 3 TIMES
+{
+  i ← 1
+  REPEAT UNTIL(i > 2)
+  {
+    count ← count + 1
+    i ← i + 1
+  }
+}
+
+DISPLAY(count)

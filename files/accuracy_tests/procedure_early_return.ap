@@ -1,0 +1,13 @@
+// Expected Output: positive not positive
+
+PROCEDURE test(n)
+{
+  IF (n > 0)
+  {
+    RETURN("positive")
+  }
+  RETURN("not positive")
+}
+
+DISPLAY(test(3))
+DISPLAY(test(-5))

@@ -1,0 +1,9 @@
+// Expected Output: 25
+
+PROCEDURE square(x)
+{
+  RETURN(x * x)
+}
+
+result ← square(5)
+DISPLAY(result)

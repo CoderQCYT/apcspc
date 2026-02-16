@@ -1,0 +1,11 @@
+// Expected Output: odd
+
+n ← 7
+IF(n MOD 2 = 0)
+{
+  DISPLAY("even")
+}
+ELSE
+{
+  DISPLAY("odd")
+}

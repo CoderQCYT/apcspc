@@ -1,0 +1,10 @@
+// Expected output: 11 21 3.4 2
+
+a ← 5 + 2 * 3
+b ← (5 + 2) * 3
+c ← 17 / 5
+d ← 17 MOD 5
+DISPLAY(a)
+DISPLAY(b)
+DISPLAY(c)
+DISPLAY(d)

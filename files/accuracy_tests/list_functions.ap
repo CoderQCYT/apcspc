@@ -1,0 +1,11 @@
+// Expected Output: 1 9 3 4
+
+nums ← [1, 2, 3]
+APPEND(nums, 4)
+INSERT(nums, 2, 9)
+REMOVE(nums, 3)
+
+FOR EACH n IN nums
+{
+  DISPLAY(n)
+}

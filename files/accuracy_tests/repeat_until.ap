@@ -1,0 +1,8 @@
+// Expected Output: 16
+
+x ← 1
+REPEAT UNTIL(x > 10)
+{
+  x ← x * 2
+}
+DISPLAY(x)

@@ -1,0 +1,22 @@
+// Expected Output: 0 1 1 2 3 5 8
+
+PROCEDURE fib(n)
+{
+  IF(n = 1)
+  {
+    RETURN(0)
+  }
+  IF(n = 2)
+  {
+    RETURN(1)
+  }
+  RETURN(fib(n - 1) + fib(n - 2))
+}
+
+DISPLAY(fib(1))
+DISPLAY(fib(2))
+DISPLAY(fib(3))
+DISPLAY(fib(4))
+DISPLAY(fib(5))
+DISPLAY(fib(6))
+DISPLAY(fib(7))

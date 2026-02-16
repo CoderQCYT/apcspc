@@ -1,0 +1,9 @@
+// Expected Output: true true true true
+
+x ← 10
+y ← 5
+
+DISPLAY(x > y)
+DISPLAY(NOT(x = y))
+DISPLAY((x > 5) AND (y < 10))
+DISPLAY((x < 5) OR (y = 5))

@@ -1,0 +1,174 @@
+{
+  "configurations": [
+    {
+      "name": "Win-x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "Win-x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "Win-x86-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ]
+    },
+    {
+      "name": "Win-arm64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_arm64_x64" ],
+      "variables": [
+        {
+          "name": "STRIP_TOOL",
+          "value": "",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "Mac-arm64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "cmakeExecutable": "/opt/homebrew/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      "cmakeCommandArgs": "-DCMAKE_MAKE_PROGRAM=/opt/homebrew/bin/ninja",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_arm" ],
+      "remoteMachineName": "-1282628091;192.168.1.60 (username=coderqc, port=22, authentication=Password)",
+      "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
+      "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
+      "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync",
+      "remoteCopyAdditionalIncludeDirectories": [ "/out/install", "" ]
+    },
+    {
+      "name": "Linux-x64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "-DCMAKE_C_FLAGS=\"-march=native -O3 -flto=thin -fno-exceptions -fno-rtti\" -DCMAKE_CXX_FLAGS=\"-march=native -O3 -flto=thin -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld -Wl,--gc-sections\"",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "variables": [
+        {
+          "name": "STRIP_TOOL",
+          "value": "/usr/bin/strip",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "Linux-arm64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_PROCESSOR=aarch64",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_arm" ],
+      "wslPath": "${defaultWSLPath}",
+      "intelliSenseMode": "linux-gcc-arm",
+      "variables": [
+        {
+          "name": "STRIP_TOOL",
+          "value": "/usr/bin/aarch64-linux-gnu-strip",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "Win-x86-MinRel",
+      "generator": "Ninja",
+      "configurationType": "MinSizeRel",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86_x64" ],
+      "variables": [
+        {
+          "name": "CMAKE_C_LINKER",
+          "value": "crinkler",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_LINKER",
+          "value": "crinkler",
+          "type": "FILEPATH"
+        }
+      ]
+    },
+    {
+      "name": "Win-arm64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_arm64_arm64" ]
+    },
+    {
+      "name": "wasm-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/wasm",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "C:/libs/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+      },
+      "inheritEnvironments": [],
+      "cmakeToolchain": "C:/libs/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "configurationType": "Release",
+      "installRoot": "${projectDir}\\out\\install\\${name}"
+    },
+    {
+      "name": "Linux-x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "wslPath": "${defaultWSLPath}"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+﻿ENABLE_QC_EXTENSIONS// oh my god挨拶の最初 ← "[1;97;49mHello, world!　こんにちは、世界！ [0m" // some fun ascii shitDISPLAY(挨拶の最初)DISPLAY("Welcome to the AP CSP Programming Language")aList ← [6, 7, 8, 9, 10, "我的肚子越来越大了"]DISPLAY("Testing list:	", aList)aList[3] ← "bro"APPEND(aList, "12")i ← 1REPEAT LENGTH(aList) TIMES{	DISPLAY("Index", i, "is", aList[i])	i ← i + 1}

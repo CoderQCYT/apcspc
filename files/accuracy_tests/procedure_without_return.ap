@@ -1,0 +1,9 @@
+// Expected Output: Hello Akari
+
+PROCEDURE greet(name)
+{
+  DISPLAY("Hello")
+  DISPLAY(name)
+}
+
+greet("Akari")

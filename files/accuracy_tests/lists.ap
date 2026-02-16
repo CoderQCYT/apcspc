@@ -1,0 +1,8 @@
+// Expected Output: 10 3 99
+
+aList ← [10, 20, 30]
+DISPLAY(aList[1])
+DISPLAY(LENGTH(aList))
+
+aList[2] ← 99
+DISPLAY(aList[2])
