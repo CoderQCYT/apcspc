@@ -1,0 +1,102 @@
+name: CMake Multi-Arch CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+
+          # Windows x64
+          - name: Windows x64
+            os: windows-latest
+            build_type: Release
+            c_compiler: cl
+            cpp_compiler: cl
+            cmake_arch: x64
+
+          # Windows x86
+          - name: Windows x86
+            os: windows-latest
+            build_type: Release
+            c_compiler: cl
+            cpp_compiler: cl
+            cmake_arch: Win32
+
+          # Windows ARM64
+          - name: Windows ARM64
+            os: windows-latest
+            build_type: Release
+            c_compiler: cl
+            cpp_compiler: cl
+            cmake_arch: ARM64
+
+          # macOS ARM64
+          - name: macOS ARM64
+            os: macos-14
+            build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+            cmake_arch: arm64
+
+          # Linux x64
+          - name: Linux x64
+            os: ubuntu-latest
+            build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+            cmake_arch: x86_64
+
+          # Linux ARM64
+          - name: Linux ARM64
+            os: ubuntu-24.04-arm
+            build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+            cmake_arch: aarch64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set build directory
+        id: vars
+        shell: bash
+        run: echo "build_dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      # Windows: MSVC requires architecture via -A
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          cmake -B ${{ steps.vars.outputs.build_dir }}
+          -S ${{ github.workspace }}
+          -A ${{ matrix.cmake_arch }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      # Non-Windows
+      - name: Configure CMake (Unix)
+        if: runner.os != 'Windows'
+        run: >
+          cmake -B ${{ steps.vars.outputs.build_dir }}
+          -S ${{ github.workspace }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: >
+          cmake --build ${{ steps.vars.outputs.build_dir }}
+          --config ${{ matrix.build_type }}
+
+      - name: Test
+        working-directory: ${{ steps.vars.outputs.build_dir }}
+        run: >
+          ctest --build-config ${{ matrix.build_type }}
