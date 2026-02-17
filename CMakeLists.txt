@@ -21,7 +21,9 @@ add_executable(apcspc
 	"src/types/Procedure.h"
 	"src/types/ExecResult.cpp"
 	"src/types/ExecResult.h"
+    "resources.rc"
 )
+
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT apcspc)
 
