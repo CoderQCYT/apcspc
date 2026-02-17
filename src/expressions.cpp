@@ -484,6 +484,8 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expect(Token::RBracket);
 			return list;
 		}
+		default:
+			std::cerr << "Unexpected token: " << token.value << std::endl;	
 	}
 	return expr;
 }

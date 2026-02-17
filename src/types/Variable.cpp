@@ -97,6 +97,7 @@ Variable Variable::copyFrom(const Variable& other) {
 	var.type = other.type;
 
 	switch (var.type) {
+	case NONE: break;
 	case NUMBER:
 		var.number = other.number;
 		break;
