@@ -1,7 +1,7 @@
 #include <string>
 #include "Variable.h"
 
-enum class ExecSignal {
+enum class ExecSignal: char {
 	None,
 	Return,
 	Error

@@ -5,7 +5,7 @@
 
 struct CompilerContext;
 struct Variable {
-	enum Type {
+	enum Type: char {
 		NONE,
 		NUMBER,
 		STRING,

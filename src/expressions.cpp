@@ -8,7 +8,7 @@
 #include <sstream>
 #include <tuple>
 
-enum class TokenType {
+enum class TokenType: char {
 	// literals and identifiers
 	Identifier,
 	Number,
@@ -54,7 +54,7 @@ struct Token {
 	std::string value;
 };
 
-enum class ExprType {
+enum class ExprType: char {
 	None,
 	Literal,
 	Identifier,
