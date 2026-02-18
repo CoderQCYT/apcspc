@@ -11,7 +11,7 @@
 
 ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vector<Variable> args) {
 	if (name == "DISPLAY") {		// DISPLAY(value)
-		if (ctx.qcExtensionsEnabled) { // All good programming languages create a new line after every print statement.
+		if (ctx.qcExtensionsEnabled) { // All good programming languages create a new line when they're done.
 			for (const Variable& arg : args) {
 				std::cout << arg.toString() << " ";
 			}
@@ -21,11 +21,20 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 			std::cout << args[0].toString() << " ";
 		}
 		return ExecResult::normal();
-	} else if (name == "INPUT") {	// INPUT([prompt])
+	}
+	else if (name == "EMIT") {		// EMIT(value) [QC EXTENSIONS ONLY]
+		if (!ctx.qcExtensionsEnabled)
+			return ExecResult::err("EMIT is only available when QC extensions are enabled.");
+		for (const Variable& arg : args) {
+			std::cout << arg.toString();
+		}
+	} 
+	else if (name == "INPUT") {	// INPUT([prompt])
 		std::string input;
 		std::getline(std::cin, input);
 		return ExecResult::ret(Variable::makeString(input));
-	} else if (name == "RANDOM") {	// RANDOM(a, b)
+	} 
+	else if (name == "RANDOM") {	// RANDOM(a, b)
 		if (args.size() != 2 || args[0].type != Variable::NUMBER || args[1].type != Variable::NUMBER) {
 			return ExecResult::err("RANDOM expects two number arguments.");
 		}
@@ -46,13 +55,15 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 		}
 		args[0].list->insert(args[0].list->begin() + index - 1, args[2]);
 		return ExecResult::normal();
-	} else if (name == "APPEND") {	// APPEND(aList, value)
+	} 
+	else if (name == "APPEND") {	// APPEND(aList, value)
 		if (args.size() != 2 || args[0].type != Variable::LIST) {
 			return ExecResult::err("APPEND expects a list and a value.");
 		}
 		args[0].list->push_back(args[1]);
 		return ExecResult::normal();
-	} else if (name == "REMOVE") {	// REMOVE(aList, i)
+	} 
+	else if (name == "REMOVE") {	// REMOVE(aList, i)
 		if (args.size() != 2 || args[0].type != Variable::LIST || args[1].type != Variable::NUMBER) {
 			return ExecResult::err("REMOVE expects a list and a number index.");
 		}
@@ -62,7 +73,8 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 		}
 		args[0].list->erase(args[0].list->begin() + index - 1);
 		return ExecResult::normal();
-	} else if (name == "LENGTH") {	// LENGTH(aList)
+	} 
+	else if (name == "LENGTH") {	// LENGTH(aList)
 		if (ctx.qcExtensionsEnabled) { // When QC extensions are enabled, LENGTH can also be used on strings.
 			if (args.size() != 1)
 				return ExecResult::err("LENGTH expects a list or a string.");
@@ -78,7 +90,8 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 				return ExecResult::err("LENGTH expects a list.");
 		}
 		return ExecResult::ret(Variable::makeNumber(args[0].list->size()));
-	} else if (name == "CONCAT") { // CONCAT(aString, bString) [QC EXTENSIONS ONLY]
+	} 
+	else if (name == "CONCAT") { // CONCAT(aString, bString) [QC EXTENSIONS ONLY]
 		if (!ctx.qcExtensionsEnabled)
 			return ExecResult::err("CONCAT is only available when QC extensions are enabled.");
 
