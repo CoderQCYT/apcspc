@@ -1,7 +1,11 @@
 #include "Variable.h"
 #include "CompilerContext.h"
 
+#ifdef HAVE_CX20_FORMAT
 #include <format>
+#else
+#include <sstream>
+#endif
 
 Variable Variable::makeNumber(double n) {
 	Variable var{};
@@ -31,7 +35,15 @@ std::string Variable::toString() const {
 		case STRING:
 			return *string;
 		case NUMBER:
+#ifdef HAVE_CX20_FORMAT
 			return std::format("{}", number);
+#else
+			{
+				std::ostringstream oss;
+				oss << number;
+				return oss.str();
+			}
+#endif
 		case BOOLEAN:
 			return boolean ? "true" : "false";
 		case LIST: {

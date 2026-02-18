@@ -27,6 +27,19 @@ add_executable(apcspc
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT apcspc)
 
+include(CheckCXXSourceCompiles)
+
+check_cxx_source_compiles("
+#include <format>
+int main() { std::format(\"{}\", 1); return 0; }
+" HAVE_CX20_FORMAT)
+
+if(HAVE_CX20_FORMAT)
+    add_compile_definitions(HAVE_CX20_FORMAT)
+else()
+    message(WARNING "std::format is not supported by the compiler.")
+endif()
+
 install(TARGETS apcspc DESTINATION .)
 
 if (MSVC)
