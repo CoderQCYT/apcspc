@@ -31,7 +31,7 @@ Variable Variable::makeBoolean(bool b) {
 std::string Variable::toString() const {
 	switch (type) {
 		case NONE:
-			return "";
+			return "null";
 		case STRING:
 			return *string;
 		case NUMBER:
