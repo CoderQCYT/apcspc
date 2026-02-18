@@ -74,5 +74,7 @@ int main(int argc, char* argv[]) {
 
 	runCode(code);
 
+	std::cout << std::endl;
+
 	return 0;
 }
