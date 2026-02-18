@@ -9,7 +9,7 @@
 #include <iostream>
 #include <random>
 
-ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vector<Variable> args) {
+ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const std::vector<Variable>& args) {
 	if (name == "DISPLAY") {		// DISPLAY(value)
 		if (ctx.qcExtensionsEnabled) { // All good programming languages create a new line when they're done.
 			for (const Variable& arg : args) {
@@ -91,7 +91,7 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 		}
 		return ExecResult::ret(Variable::makeNumber(args[0].list->size()));
 	} 
-	else if (name == "CONCAT") { // CONCAT(aString, bString) [QC EXTENSIONS ONLY]
+	else if (name == "CONCAT") { // CONCAT(aStrizznzng, bString) [QC EXTENSIONS ONLY]
 		if (!ctx.qcExtensionsEnabled)
 			return ExecResult::err("CONCAT is only available when QC extensions are enabled.");
 
@@ -107,12 +107,15 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, std::vec
 		if (it != ctx.variables.end() && it->second.type == Variable::PROCEDURE) {
 			Procedure proc = *it->second.procedure;
 
-			args = std::vector<Variable>(args.begin(), args.begin() + std::min(args.size(), proc.parameters.size()));
+			std::vector<Variable> userArgs(
+				args.begin(),
+				args.begin() + std::min(args.size(), proc.parameters.size())
+			);
 
 			CompilerContext localCtx;
 			localCtx.variables = ctx.variables;
-			for (size_t i = 0; i < args.size(); ++i) {
-				localCtx.variables[proc.parameters[i]] = args[i];
+			for (size_t i = 0; i < userArgs.size(); ++i) {
+				localCtx.variables[proc.parameters[i]] = userArgs[i];
 			}
 			return runBlock(localCtx, proc.body);
 		} else {

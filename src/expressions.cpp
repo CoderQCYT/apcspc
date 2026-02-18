@@ -6,6 +6,7 @@
 #include "types/ExecResult.h"
 
 #include <sstream>
+#include <tuple>
 
 struct Token {
 	enum Type {
@@ -330,26 +331,33 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx);
 
 
 static Expr* nud(const Token& token, CompilerContext& ctx) {
-	Expr* expr = new Expr;
 	switch (token.type) {
-		case Token::True:
+		case Token::True: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Literal;
 			expr->value = Variable::makeBoolean(true);
-			break;
-		case Token::False:
+			return expr;
+		}
+		case Token::False: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Literal;
 			expr->value = Variable::makeBoolean(false);
-			break;
-		case Token::Number:
+			return expr;
+		}
+		case Token::Number: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Literal;
 			expr->value = Variable::makeNumber(std::stod(token.value));
-			break;
-		case Token::String:
+			return expr;
+		}
+		case Token::String: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Literal;
 			expr->value.type = Variable::STRING;
 			expr->value = Variable::makeString(token.value);
-			break;
-		case Token::Identifier:
+			return expr;
+		}
+		case Token::Identifier: {
 			if (peek().type == Token::LParen) {
 				advance(); // '('
 
@@ -371,23 +379,28 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 				expect(Token::RParen);
 				return call;
 			}
-
+			Expr* expr = new Expr;
 			expr->type = Expr::Identifier;
 			expr->value.type = Variable::STRING;
 			expr->value = Variable::makeString(token.value);
-			break;
-		case Token::Assignment:
+			return expr;
+		}
+		case Token::Assignment: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "←";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(0, ctx));
-			break;
-		case Token::Add:
+			return expr;
+		}
+		case Token::Add: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "+";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(10, ctx));
-			break;
+			return expr;
+		}
 		case Token::Subtract: {
 			Expr* expr = new Expr;
 			expr->type = Expr::Unary;
@@ -395,133 +408,158 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expr->children.push_back(parseExpr(15, ctx));
 			return expr;
 		}
-		case Token::Multiply:
+		case Token::Multiply: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "*";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
-			break;
-		case Token::Divide:
+			return expr;
+		}
+		case Token::Divide: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "/";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
-			break;
-		case Token::Modulo:
+			return expr;
+		}
+		case Token::Modulo: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "MOD";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
-			break;
-		case Token::And:
+			return expr;
+		}
+		case Token::And: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "AND";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(5, ctx));
-			break;
-		case Token::Or:
+			return expr;
+		}
+		case Token::Or: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "OR";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(5, ctx));
-			break;
-		case Token::Not:
+			return expr;
+		}
+		case Token::Not: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Unary;
 			expr->op = "NOT";
 			expr->children.emplace_back(parseExpr(15, ctx));
-			break;
-		case Token::Equal:
+			return expr;
+		}
+		case Token::Equal: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "=";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
-		case Token::NotEqual:
+			return expr;
+		}
+		case Token::NotEqual: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "!=";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
-		case Token::Greater:
+			return expr;
+		}
+		case Token::Greater: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = ">";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
-		case Token::Less:
+			return expr;
+		}
+		case Token::Less: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "<";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
-		case Token::GreaterEqual:
+			return expr;
+		}
+		case Token::GreaterEqual: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = ">=";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
-		case Token::LessEqual:
+			return expr;
+		}
+		case Token::LessEqual: {
+			Expr* expr = new Expr;
 			expr->type = Expr::Binary;
 			expr->op = "<=";
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
-			break;
+			return expr;
+		}
 		case Token::LParen: {
-			Expr* e = parseExpr(0, ctx);
+			Expr* expr = parseExpr(0, ctx);
 			expect(Token::RParen);
-			return e;
+			return expr;
 		}
 		case Token::LBracket: {
-			Expr* list = new Expr;
-			list->type = Expr::List;
+			Expr* expr = new Expr;
+			expr->type = Expr::List;
 
 			while (peek().type != Token::RBracket) {
-				list->children.push_back(parseExpr(0, ctx));
+				expr->children.push_back(parseExpr(0, ctx));
 				if (peek().type == Token::Comma)
 					advance();
 			}
 
 			expect(Token::RBracket);
-			return list;
+			return expr;
 		}
 		default:
 			std::cerr << "Unexpected token: " << token.value << std::endl;	
+			exit(1);
 	}
-	return expr;
 }
 
 static Expr* parseExpr(int min_bp, CompilerContext& ctx) {
-	Token t = advance();
+	const Token& t = advance();
 	Expr* left = nud(t, ctx);
 
 	while (true) {
-		Token op = peek();
-		auto [lbp, rbp] = bindingPower(op);
+		const Token& op = peek();
+
+		int lbp, rbp;
+		std::tie(lbp, rbp) = bindingPower(op);
 
 		if (lbp < min_bp)
 			break;
 
 		advance();
 
+		Expr* right = parseExpr(rbp, ctx);
+
+		Expr* expr = new Expr;
 		if (op.type == Token::LBracket) {
-			Expr* idx = new Expr;
-			idx->type = Expr::Index;
-			idx->children.emplace_back(left);
-			idx->children.emplace_back(parseExpr(0, ctx));
+			expr->type = Expr::Index;
+			expr->children.emplace_back(left);
+			expr->children.emplace_back(right);
 			expect(Token::RBracket);
-			left = idx;
+			left = expr;
 			continue;
 		}
 
-		Expr* right = parseExpr(rbp, ctx);
+		expr->type = Expr::Binary;
+		expr->op = op.value;
+		expr->children.emplace_back(left);
+		expr->children.emplace_back(right);
 
-		Expr* bin = new Expr;
-		bin->type = Expr::Binary;
-		bin->op = op.value;
-		bin->children.emplace_back(left);
-		bin->children.emplace_back(right);
-
-		left = bin;
+		left = expr;
 	}
 
 	return left;

@@ -11,4 +11,4 @@ struct Procedure {
 	std::vector<std::string> body;
 };
 
-ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const std::vector<Variable> args);
+ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const std::vector<Variable>& args);
