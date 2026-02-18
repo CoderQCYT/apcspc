@@ -91,7 +91,7 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		}
 		return ExecResult::ret(Variable::makeNumber(args[0].list->size()));
 	} 
-	else if (name == "CONCAT") { // CONCAT(aStrizznzng, bString) [QC EXTENSIONS ONLY]
+	else if (name == "CONCAT") { // CONCAT(aString, bString) [QC EXTENSIONS ONLY]
 		if (!ctx.qcExtensionsEnabled)
 			return ExecResult::err("CONCAT is only available when QC extensions are enabled.");
 
@@ -103,9 +103,9 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 
 
 	else { // User-defined procedure
-		auto it = ctx.variables.find(name);
-		if (it != ctx.variables.end() && it->second.type == Variable::PROCEDURE) {
-			Procedure proc = *it->second.procedure;
+		Variable& var = ctx.resolveVariable(name);
+		if (var.type == Variable::PROCEDURE) {
+			const Procedure& proc = *var.procedure;
 
 			std::vector<Variable> userArgs(
 				args.begin(),
@@ -113,7 +113,7 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 			);
 
 			CompilerContext localCtx;
-			localCtx.variables = ctx.variables;
+			localCtx.parent = &ctx;
 			for (size_t i = 0; i < userArgs.size(); ++i) {
 				localCtx.variables[proc.parameters[i]] = userArgs[i];
 			}
