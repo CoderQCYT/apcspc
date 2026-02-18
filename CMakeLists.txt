@@ -14,6 +14,7 @@ add_executable(apcspc
 	"src/expressions.h"
 	"src/util.cpp"
 	"src/util.h"
+    "src/types/CompilerContext.cpp"
 	"src/types/CompilerContext.h"
 	"src/types/Variable.cpp"
 	"src/types/Variable.h"

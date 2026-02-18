@@ -8,69 +8,74 @@
 #include <sstream>
 #include <tuple>
 
+enum class TokenType {
+	// literals and identifiers
+	Identifier,
+	Number,
+	String,
+	List,
+	True,
+	False,
+
+	// operators
+	Add,
+	Subtract,
+	Multiply,
+	Divide,
+	Modulo,
+	Comma,
+	Assignment,
+
+	// logical operators
+	And,
+	Not,
+	Or,
+
+	// comparison operators
+	Equal,
+	NotEqual,
+	Greater,
+	Less,
+	GreaterEqual,
+	LessEqual,
+
+	// wrappers
+	LParen,
+	RParen,
+	LBracket,
+	RBracket,
+	Function,
+
+	End
+};
+
 struct Token {
-	enum Type {
-		// literals and identifiers
-		Identifier,
-		Number,
-		String,
-		List,
-		True,
-		False,
-
-		// operators
-		Add,
-		Subtract,
-		Multiply,
-		Divide,
-		Modulo,
-		Comma,
-		Assignment,
-
-		// logical operators
-		And,
-		Not,
-		Or,
-
-		// comparison operators
-		Equal,
-		NotEqual,
-		Greater,
-		Less,
-		GreaterEqual,
-		LessEqual,
-
-		// wrappers
-		LParen,
-		RParen,
-		LBracket,
-		RBracket,
-		Function,
-
-		End
-	} type;
+	TokenType type;
 	std::string value;
 };
 
+enum class ExprType {
+	None,
+	Literal,
+	Identifier,
+	Unary,
+	Binary,
+	Index,
+	Call,
+	List
+};
+
 struct Expr {
-	enum Type {
-		None,
-		Literal,
-		Identifier,
-		Unary,
-		Binary,
-		Index,
-		Call,
-		List
-	} type = Expr::None;
-
-	Variable value; // for literals and variables
-	std::string op = ""; // for operators
+	ExprType type = ExprType::None;
+	
+	Variable value; // for literals
+	TokenType op; // for operators
+	std::string variable; // for identifiers
 	std::vector<Expr*> children = {};
-
 };
 
 static std::vector<Token> tokens;
+static std::unordered_map<std::string, Token> cachedTokens;
 static std::unordered_map<std::string, Expr*> cachedExprs;
 static size_t pos = 0;
 
@@ -87,58 +92,61 @@ static bool isIdentityPart(char c) {
 
 static Token peek() {
 	if (pos < tokens.size()) return tokens[pos];
-	return Token{ Token::End, "" };
+	return Token{ TokenType::End, "" };
 }
 static Token advance() {
 	Token t = peek();
 	if (pos < tokens.size()) ++pos;
 	return t;
 }
-static void expect(Token::Type type) {
+static void expect(TokenType type) {
 	Token t = advance();
 	if (t.type != type) return;
 }
 
 static std::pair<int, int> bindingPower(const Token& t) {
 	switch (t.type) {
-	case Token::Assignment:	return { 3, 2 };
-	case Token::Or:
-	case Token::And:		return { 5, 6 };
-	case Token::Equal:
-	case Token::NotEqual:
-	case Token::Greater:
-	case Token::Less:
-	case Token::GreaterEqual:
-	case Token::LessEqual:	return { 7, 8 };
-	case Token::Add:
-	case Token::Subtract:	return { 10, 11 };
-	case Token::Not:		return { 15, 16 };
-	case Token::Multiply:
-	case Token::Divide:		
-	case Token::Modulo:		return { 20, 21 };
-	case Token::LBracket:	return { 100, 121 };
-	case Token::LParen:		return { 120, 121 };
-	default:				return { -1, -1 };
+	case TokenType::Assignment:	return { 3, 2 };
+	case TokenType::Or:
+	case TokenType::And:		return { 5, 6 };
+	case TokenType::Equal:
+	case TokenType::NotEqual:
+	case TokenType::Greater:
+	case TokenType::Less:
+	case TokenType::GreaterEqual:
+	case TokenType::LessEqual:	return { 7, 8 };
+	case TokenType::Add:
+	case TokenType::Subtract:	return { 10, 11 };
+	case TokenType::Not:		return { 15, 16 };
+	case TokenType::Multiply:
+	case TokenType::Divide:		
+	case TokenType::Modulo:		return { 20, 21 };
+	case TokenType::LBracket:	return { 100, 121 };
+	case TokenType::LParen:		return { 120, 121 };
+	default:					return { -1, -1 };
 	}
 }
 
 static std::vector<Token> tokenize(const std::string& _expr) {
+	if (cachedTokens.find(_expr) != cachedTokens.end())
+		return { cachedTokens[_expr] };
+
 	std::vector<Token> out;
 
 	std::string expr = trim(_expr);
 	for (size_t i = 0; i < expr.size(); ++i) {
-		char c = expr[i];
+		const char c = expr[i];
 
 		if (c > 0)
 			if (std::isspace(c)) continue;
 
 		// boolean literals
 		if (expr.compare(i, 4, "true") == 0 && (i + 4 >= expr.size() || !isIdentityPart(expr[i + 4]))) {
-			out.push_back({ Token::True, "true" });
+			out.push_back({ TokenType::True, "true" });
 			i += 3;
 			continue;
 		} else if (expr.compare(i, 5, "false") == 0 && (i + 5 >= expr.size() || !isIdentityPart(expr[i + 5]))) {
-			out.push_back({ Token::False, "false" });
+			out.push_back({ TokenType::False, "false" });
 			i += 4;
 			continue;
 		}
@@ -169,7 +177,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 
 			--i; // compensate for outer for-loop
 
-			out.push_back({ Token::Number, number });
+			out.push_back({ TokenType::Number, number });
 			continue;
 		}
 
@@ -238,50 +246,50 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 				exit(1);
 			}
 
-			out.push_back({ Token::String, str });
+			out.push_back({ TokenType::String, str });
 			continue;
 		}
 
 		
 		// slightly longer UTF-8 operators, e.g. equality (≠, ≥, ≤)
 		if (c == (char)-30 and expr[i+1] == (char)-119 and expr[i+2] == (char)-96) {
-			out.push_back({ Token::NotEqual, "!=" });
+			out.push_back({ TokenType::NotEqual, "!=" });
 			i += 2;
 			continue;
 		}
 		else if (c == (char)-30 and expr[i+1] == (char)-119 and expr[i+2] == (char)-91) {
-			out.push_back({ Token::GreaterEqual, ">=" });
+			out.push_back({ TokenType::GreaterEqual, ">=" });
 			i += 2;
 			continue;
 		}
 		else if (c == (char)-30 and expr[i+1] == (char)-119 and expr[i+2] == (char)-92) {
-			out.push_back({ Token::LessEqual, "<=" });
+			out.push_back({ TokenType::LessEqual, "<=" });
 			i += 2;
 			continue;
 		}
 		else if (c == (char)-30 and expr[i+1] == (char)-122 and expr[i+2] == (char)-112) {
-			out.push_back({ Token::Assignment, "←" });
+			out.push_back({ TokenType::Assignment, "←" });
 			i += 2;
 			continue;
 		// now handle normal ASCII operators because I'm not an asshole
 		}
 		else if (c == '!' and expr[i+1] == '=') {
-			out.push_back({ Token::NotEqual, "!=" });
+			out.push_back({ TokenType::NotEqual, "!=" });
 			i += 1;
 			continue;
 		} 
 		else if (c == '>' and expr[i+1] == '=') {
-			out.push_back({ Token::GreaterEqual, ">=" });
+			out.push_back({ TokenType::GreaterEqual, ">=" });
 			i += 1;
 			continue;
 		}
 		else if (c == '<' and expr[i+1] == '=') {
-			out.push_back({ Token::LessEqual, "<=" });
+			out.push_back({ TokenType::LessEqual, "<=" });
 			i += 1;
 			continue;
 		}
 		else if (c == '<' and expr[i + 1] == '-') {
-			out.push_back({ Token::Assignment, "←" });
+			out.push_back({ TokenType::Assignment, "←" });
 			i += 1;
 			continue;
 		} else if (c == '/' and expr[i + 1] == '/') { // Handle comments in the expression stage.
@@ -297,29 +305,29 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 			}
 			--i;
 
-			if (ident == "MOD") out.push_back({ Token::Modulo, "MOD" });
-			else if (ident == "AND") out.push_back({ Token::And, "AND" });
-			else if (ident == "OR") out.push_back({ Token::Or, "OR" });
-			else if (ident == "NOT") out.push_back({ Token::Not, "NOT" });
-			else out.push_back({ Token::Identifier, ident });
+			if (ident == "MOD") out.push_back({ TokenType::Modulo, "MOD" });
+			else if (ident == "AND") out.push_back({ TokenType::And, "AND" });
+			else if (ident == "OR") out.push_back({ TokenType::Or, "OR" });
+			else if (ident == "NOT") out.push_back({ TokenType::Not, "NOT" });
+			else out.push_back({ TokenType::Identifier, ident });
 			continue;
 		}
 
 
 		// basic operators
 		switch (c) {
-			case '+': out.push_back({ Token::Add,      "+" });  break;
-			case '-': out.push_back({ Token::Subtract, "-" });  break;
-			case '*': out.push_back({ Token::Multiply, "*" });  break;
-			case '/': out.push_back({ Token::Divide,   "/" });  break;
-			case '(': out.push_back({ Token::LParen,   "(" });  break;
-			case ')': out.push_back({ Token::RParen,   ")" });  break;
-			case '[': out.push_back({ Token::LBracket, "[" });  break;
-			case ']': out.push_back({ Token::RBracket, "]" });  break;
-			case ',': out.push_back({ Token::Comma,    "," });  break;
-			case '=': out.push_back({ Token::Equal,    "=" });  break;
-			case '>': out.push_back({ Token::Greater,  ">" });  break;
-			case '<': out.push_back({ Token::Less,     "<" });  break;
+			case '+': out.push_back({ TokenType::Add,      "+" });  break;
+			case '-': out.push_back({ TokenType::Subtract, "-" });  break;
+			case '*': out.push_back({ TokenType::Multiply, "*" });  break;
+			case '/': out.push_back({ TokenType::Divide,   "/" });  break;
+			case '(': out.push_back({ TokenType::LParen,   "(" });  break;
+			case ')': out.push_back({ TokenType::RParen,   ")" });  break;
+			case '[': out.push_back({ TokenType::LBracket, "[" });  break;
+			case ']': out.push_back({ TokenType::RBracket, "]" });  break;
+			case ',': out.push_back({ TokenType::Comma,    "," });  break;
+			case '=': out.push_back({ TokenType::Equal,    "=" });  break;
+			case '>': out.push_back({ TokenType::Greater,  ">" });  break;
+			case '<': out.push_back({ TokenType::Less,     "<" });  break;
 		}
 	}
 
@@ -332,43 +340,43 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx);
 
 static Expr* nud(const Token& token, CompilerContext& ctx) {
 	switch (token.type) {
-		case Token::True: {
+		case TokenType::True: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Literal;
+			expr->type = ExprType::Literal;
 			expr->value = Variable::makeBoolean(true);
 			return expr;
 		}
-		case Token::False: {
+		case TokenType::False: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Literal;
+			expr->type = ExprType::Literal;
 			expr->value = Variable::makeBoolean(false);
 			return expr;
 		}
-		case Token::Number: {
+		case TokenType::Number: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Literal;
+			expr->type = ExprType::Literal;
 			expr->value = Variable::makeNumber(std::stod(token.value));
 			return expr;
 		}
-		case Token::String: {
+		case TokenType::String: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Literal;
+			expr->type = ExprType::Literal;
 			expr->value.type = Variable::STRING;
 			expr->value = Variable::makeString(token.value);
 			return expr;
 		}
-		case Token::Identifier: {
-			if (peek().type == Token::LParen) {
+		case TokenType::Identifier: {
+			if (peek().type == TokenType::LParen) {
 				advance(); // '('
 
 				Expr* call = new Expr;
-				call->type = Expr::Call;
-				call->op = token.value;
+				call->type = ExprType::Call;
+				call->variable = token.value;
 
-				if (peek().type != Token::RParen) {
+				if (peek().type != TokenType::RParen) {
 					while (true) {
 						call->children.emplace_back(parseExpr(0, ctx));
-						if (peek().type == Token::Comma) {
+						if (peek().type == TokenType::Comma) {
 							advance();
 							continue;
 						}
@@ -376,149 +384,148 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 					}
 				}
 
-				expect(Token::RParen);
+				expect(TokenType::RParen);
 				return call;
 			}
 			Expr* expr = new Expr;
-			expr->type = Expr::Identifier;
-			expr->value.type = Variable::STRING;
-			expr->value = Variable::makeString(token.value);
+			expr->type = ExprType::Identifier;
+			expr->variable = token.value;
 			return expr;
 		}
-		case Token::Assignment: {
+		case TokenType::Assignment: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "←";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(0, ctx));
 			return expr;
 		}
-		case Token::Add: {
+		case TokenType::Add: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "+";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(10, ctx));
 			return expr;
 		}
-		case Token::Subtract: {
+		case TokenType::Subtract: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Unary;
-			expr->op = "-";
+			expr->type = ExprType::Unary;
+			expr->op = token.type;
 			expr->children.push_back(parseExpr(15, ctx));
 			return expr;
 		}
-		case Token::Multiply: {
+		case TokenType::Multiply: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "*";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
 			return expr;
 		}
-		case Token::Divide: {
+		case TokenType::Divide: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "/";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
 			return expr;
 		}
-		case Token::Modulo: {
+		case TokenType::Modulo: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "MOD";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(20, ctx));
 			return expr;
 		}
-		case Token::And: {
+		case TokenType::And: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "AND";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(5, ctx));
 			return expr;
 		}
-		case Token::Or: {
+		case TokenType::Or: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "OR";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(5, ctx));
 			return expr;
 		}
-		case Token::Not: {
+		case TokenType::Not: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Unary;
-			expr->op = "NOT";
+			expr->type = ExprType::Unary;
+			expr->op = token.type;
 			expr->children.emplace_back(parseExpr(15, ctx));
 			return expr;
 		}
-		case Token::Equal: {
+		case TokenType::Equal: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "=";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::NotEqual: {
+		case TokenType::NotEqual: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "!=";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::Greater: {
+		case TokenType::Greater: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = ">";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::Less: {
+		case TokenType::Less: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "<";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::GreaterEqual: {
+		case TokenType::GreaterEqual: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = ">=";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::LessEqual: {
+		case TokenType::LessEqual: {
 			Expr* expr = new Expr;
-			expr->type = Expr::Binary;
-			expr->op = "<=";
+			expr->type = ExprType::Binary;
+			expr->op = token.type;
 			expr->children.emplace_back(new Expr);
 			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
-		case Token::LParen: {
+		case TokenType::LParen: {
 			Expr* expr = parseExpr(0, ctx);
-			expect(Token::RParen);
+			expect(TokenType::RParen);
 			return expr;
 		}
-		case Token::LBracket: {
+		case TokenType::LBracket: {
 			Expr* expr = new Expr;
-			expr->type = Expr::List;
+			expr->type = ExprType::List;
 
-			while (peek().type != Token::RBracket) {
+			while (peek().type != TokenType::RBracket) {
 				expr->children.push_back(parseExpr(0, ctx));
-				if (peek().type == Token::Comma)
+				if (peek().type == TokenType::Comma)
 					advance();
 			}
 
-			expect(Token::RBracket);
+			expect(TokenType::RBracket);
 			return expr;
 		}
 		default:
@@ -545,17 +552,17 @@ static Expr* parseExpr(int min_bp, CompilerContext& ctx) {
 		Expr* right = parseExpr(rbp, ctx);
 
 		Expr* expr = new Expr;
-		if (op.type == Token::LBracket) {
-			expr->type = Expr::Index;
+		if (op.type == TokenType::LBracket) {
+			expr->type = ExprType::Index;
 			expr->children.emplace_back(left);
 			expr->children.emplace_back(right);
-			expect(Token::RBracket);
+			expect(TokenType::RBracket);
 			left = expr;
 			continue;
 		}
 
-		expr->type = Expr::Binary;
-		expr->op = op.value;
+		expr->type = ExprType::Binary;
+		expr->op = op.type;
 		expr->children.emplace_back(left);
 		expr->children.emplace_back(right);
 
@@ -567,22 +574,17 @@ static Expr* parseExpr(int min_bp, CompilerContext& ctx) {
 
 static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 	switch (expr->type) {
-		case Expr::Literal: return expr->value;
-		case Expr::Identifier:
-			if (ctx.variables.find(*expr->value.string) != ctx.variables.end()) {
-				return ctx.variables[*expr->value.string];
-			} else {
-				std::cerr << "Undefined variable: " << *expr->value.string << std::endl;
-				exit(1);
-			}
-		case Expr::Call: {
+		case ExprType::Literal: return expr->value;
+		case ExprType::Identifier:
+			return ctx.resolveVariable(expr->variable);
+		case ExprType::Call: {
 			std::vector<Variable> args = {};
 			for (Expr* child : expr->children) {
 				args.push_back(evalExpr(child, ctx));
 			}
-			ExecResult result = callProcedure(ctx, expr->op, args);
+			ExecResult result = callProcedure(ctx, expr->variable, args);
 			if (result.signal == ExecSignal::Error) {
-				std::cerr << "Error calling procedure " << expr->op << ": " << result.variable.toString() << std::endl;
+				std::cerr << "Error calling procedure " << expr->variable << ": " << result.variable.toString() << std::endl;
 				exit(1);
 			}
 			if (result.signal == ExecSignal::Return) {
@@ -590,29 +592,29 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			}
 			return Variable::makeNone(ctx);
 		}
-		case Expr::Binary: {
+		case ExprType::Binary: {
 			Expr* leftExpr = expr->children[0];
 			Expr* rightExpr = expr->children[1];
 
 			Variable rightVal = evalExpr(rightExpr, ctx);
 
-			if (expr->op == "←") {
-				if (leftExpr->type == Expr::Index) {
+			if (expr->op == TokenType::Assignment) {
+				if (leftExpr->type == ExprType::Index) {
 					Expr* baseExpr = leftExpr->children[0];
-					Variable& leftVal = ctx.variables[*baseExpr->value.string];
+					Variable& leftVal = ctx.resolveVariable(baseExpr->variable);
 					Variable indexVal = evalExpr(leftExpr->children[1], ctx);
 
-					if (leftExpr->type == Expr::Index) {
+					if (leftExpr->type == ExprType::Index) {
 
 						Expr* baseExpr = leftExpr->children[0];
 						Expr* indexExpr = leftExpr->children[1];
 
-						if (baseExpr->type != Expr::Identifier) {
+						if (baseExpr->type != ExprType::Identifier) {
 							std::cerr << "Indexed assignment requires a variable." << std::endl;
 							exit(1);
 						}
 
-						Variable& leftVal = ctx.variables[*baseExpr->value.string];
+						Variable& leftVal = ctx.resolveVariable(baseExpr->variable);
 						Variable indexVal = evalExpr(indexExpr, ctx);
 
 						if (leftVal.type != Variable::LIST ||
@@ -645,17 +647,38 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					}
 					
 				}
-				else if (leftExpr->type != Expr::Identifier) {
+				else if (leftExpr->type != ExprType::Identifier) {
 					std::cerr << "Left-hand side of assignment must be a variable." << std::endl;
 					exit(1);
 				}
-				ctx.variables[*leftExpr->value.string] = Variable::copyFrom(rightVal);
+				ctx.variables[leftExpr->variable] = Variable::copyFrom(rightVal);
 				return rightVal;
 			}
 
 			Variable leftVal = evalExpr(leftExpr, ctx);
 
 			if (leftVal.type == Variable::NUMBER && rightVal.type == Variable::NUMBER) {
+				switch (expr->op) {
+					case TokenType::Add:
+						return Variable::makeNumber(leftVal.number + rightVal.number);
+					case TokenType::Subtract:
+						return Variable::makeNumber(leftVal.number - rightVal.number);
+					case TokenType::Multiply:
+						return Variable::makeNumber(leftVal.number * rightVal.number);
+					case TokenType::Divide:
+						return Variable::makeNumber(leftVal.number / rightVal.number);
+					case TokenType::Modulo:
+						return Variable::makeNumber((const int)leftVal.number % (const int)rightVal.number);
+					case TokenType::Greater:
+						return Variable::makeBoolean(leftVal.number > rightVal.number);
+					case TokenType::Less:
+						return Variable::makeBoolean(leftVal.number < rightVal.number);
+					case TokenType::GreaterEqual:
+						return Variable::makeBoolean(leftVal.number >= rightVal.number);
+					case TokenType::LessEqual:
+						return Variable::makeBoolean(leftVal.number <= rightVal.number);
+				}
+				/*
 				if (expr->op == "+") return Variable::makeNumber(leftVal.number + rightVal.number);
 				if (expr->op == "-") return Variable::makeNumber(leftVal.number - rightVal.number);
 				if (expr->op == "*") return Variable::makeNumber(leftVal.number * rightVal.number);
@@ -665,15 +688,29 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 				if (expr->op == "<") return Variable::makeBoolean(leftVal.number < rightVal.number);
 				if (expr->op == ">=") return Variable::makeBoolean(leftVal.number >= rightVal.number);
 				if (expr->op == "<=") return Variable::makeBoolean(leftVal.number <= rightVal.number);
+				*/
 			}
 
+			switch (expr->op) {
+				case TokenType::And:
+					return Variable::makeBoolean(leftVal.toBoolean() && rightVal.toBoolean());
+				case TokenType::Or:
+					return Variable::makeBoolean(leftVal.toBoolean() || rightVal.toBoolean());
+				case TokenType::Equal:
+					return Variable::makeBoolean(leftVal.toString() == rightVal.toString());
+				case TokenType::NotEqual:
+					return Variable::makeBoolean(leftVal.toString() != rightVal.toString());
+			}
+
+			/*
 			if (expr->op == "AND") return Variable::makeBoolean(leftVal.toBoolean() && rightVal.toBoolean());
 			if (expr->op == "OR") return Variable::makeBoolean(leftVal.toBoolean() || rightVal.toBoolean());
 			if (expr->op == "=") return Variable::makeBoolean(leftVal.toString() == rightVal.toString());
 			if (expr->op == "!=") return Variable::makeBoolean(leftVal.toString() != rightVal.toString());
+			*/
 
 			// detecting indexing like this actually fucking works, and I'm not sure why
-			if (expr->op == "[") {
+			if (expr->op == TokenType::LParen) {
 				if (leftVal.type == Variable::LIST && rightVal.type == Variable::NUMBER) {
 					int index = (int)rightVal.number;
 					if (index < 0 || index >= leftVal.list->size()) {
@@ -697,12 +734,12 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			std::cerr << "Error in binary expression." << std::endl;
 			exit(1);
 		}
-		case Expr::Unary: {
+		case ExprType::Unary: {
 			Expr* child = expr->children[0];
 			Variable val = evalExpr(child, ctx);
-			if (expr->op == "NOT") return Variable::makeBoolean(!val.toBoolean());
+			if (expr->op == TokenType::Not) return Variable::makeBoolean(!val.toBoolean());
 
-			if (expr->op == "-") {
+			if (expr->op == TokenType::Subtract) {
 				if (val.type != Variable::NUMBER) {
 					std::cerr << "'-' requires a number." << std::endl;
 					exit(1);
@@ -713,7 +750,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			std::cerr << "Error in unary expression." << std::endl;
 			exit(1);
 		}
-		case Expr::Index: {
+		case ExprType::Index: {
 			Variable leftVal = evalExpr(expr->children[0], ctx);
 			Variable rightVal = evalExpr(expr->children[1], ctx);
 
@@ -746,7 +783,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 				exit(1);
 			}
 		}
-		case Expr::List: {
+		case ExprType::List: {
 			std::vector<Variable> values;
 
 			for (Expr* child : expr->children) {
