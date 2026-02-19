@@ -468,7 +468,7 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			return expr;
 		}
 		default:
-			std::cerr << "Unexpected token: " << token.value << std::endl;	
+			std::cerr << "Unexpected token." << std::endl;	
 			exit(1);
 	}
 }
