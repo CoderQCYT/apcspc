@@ -393,60 +393,12 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expr->variable = token.value;
 			return expr;
 		}
-		case TokenType::Assignment: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(0, ctx));
-			return expr;
-		}
-		case TokenType::Add: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(10, ctx));
-			return expr;
-		}
 		case TokenType::Subtract:
 		case TokenType::Not: {
 			Expr* expr = new Expr;
 			expr->type = ExprType::Unary;
 			expr->op = token.type;
 			expr->children.emplace_back(parseExpr(15, ctx));
-			return expr;
-		}
-		case TokenType::Multiply:
-		case TokenType::Divide:
-		case TokenType::Modulo: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(20, ctx));
-			return expr;
-		}
-		case TokenType::And:
-		case TokenType::Or: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(5, ctx));
-			return expr;
-		}
-		case TokenType::Equal:
-		case TokenType::NotEqual:
-		case TokenType::Greater:
-		case TokenType::Less:
-		case TokenType::GreaterEqual:
-		case TokenType::LessEqual: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
 			return expr;
 		}
 		case TokenType::LParen: {
@@ -486,20 +438,44 @@ static Expr* parseExpr(int min_bp, CompilerContext& ctx) {
 		if (lbp < min_bp)
 			break;
 
-		advance();
+		advance();  // consume operator
 
-		Expr* right = parseExpr(rbp, ctx);
+		// Function call
+		if (op.type == TokenType::LParen) {
+			Expr* call = new Expr;
+			call->type = ExprType::Call;
+			call->children.emplace_back(left);
 
-		Expr* expr = new Expr;
-		if (op.type == TokenType::LBracket) {
-			expr->type = ExprType::Index;
-			expr->children.emplace_back(left);
-			expr->children.emplace_back(right);
-			expect(TokenType::RBracket);
-			left = expr;
+			if (peek().type != TokenType::RParen) {
+				while (true) {
+					call->children.emplace_back(parseExpr(0, ctx));
+					if (peek().type == TokenType::Comma)
+						advance();
+					else
+						break;
+				}
+			}
+
+			expect(TokenType::RParen);
+			left = call;
 			continue;
 		}
 
+		// Indexing
+		if (op.type == TokenType::LBracket) {
+			Expr* index = new Expr;
+			index->type = ExprType::Index;
+			index->children.emplace_back(left);
+			index->children.emplace_back(parseExpr(0, ctx));
+			expect(TokenType::RBracket);
+			left = index;
+			continue;
+		}
+
+		// Standard binary operator
+		Expr* right = parseExpr(rbp, ctx);
+
+		Expr* expr = new Expr;
 		expr->type = ExprType::Binary;
 		expr->op = op.type;
 		expr->children.emplace_back(left);
@@ -510,6 +486,7 @@ static Expr* parseExpr(int min_bp, CompilerContext& ctx) {
 
 	return left;
 }
+
 
 static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 	switch (expr->type) {
