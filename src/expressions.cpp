@@ -90,11 +90,11 @@ static bool isIdentityPart(char c) {
 	return std::isalnum((unsigned char)c) || c == '_';
 }
 
-static const Token& peek() {
+static const Token peek() {
 	if (pos < tokens.size()) return tokens[pos];
 	return Token{ TokenType::End, "" };
 }
-static const Token& advance() {
+static const Token advance() {
 	const Token& t = peek();
 	if (pos < tokens.size()) ++pos;
 	return t;
