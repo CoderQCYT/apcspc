@@ -619,28 +619,6 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 				case TokenType::NotEqual:
 					return Variable::makeBoolean(leftVal.toString() != rightVal.toString());
 			}
-
-			// detecting indexing like this actually fucking works, and I'm not sure why
-			if (expr->op == TokenType::LParen) {
-				if (leftVal.type == Variable::LIST && rightVal.type == Variable::NUMBER) {
-					int index = (int)rightVal.number;
-					if (index < 0 || index >= leftVal.list->size()) {
-						std::cerr << "List index out of bounds." << std::endl;
-						exit(1);
-					}
-					return (*leftVal.list)[index];
-				} else if (leftVal.type == Variable::STRING && rightVal.type == Variable::NUMBER) {
-					int index = (int)rightVal.number;
-					if (index < 0 || index >= leftVal.string->size()) {
-						std::cerr << "String index out of bounds." << std::endl;
-						exit(1);
-					}
-					return Variable::makeString(std::string(1, (*leftVal.string)[index]));
-				} else {
-					std::cerr << "Indexing operator requires a list or string on the left and a number on the right." << std::endl;
-					exit(1);
-				}
-			}
 			
 			std::cerr << "Error in binary expression." << std::endl;
 			exit(1);
