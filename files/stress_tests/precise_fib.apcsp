@@ -14,7 +14,7 @@ PROCEDURE fib(n)
 }
 
 i ← 1
-REPEAT 35 TIMES
+REPEAT 30 TIMES
 {
 		DISPLAY(fib(i))
 	i ← i + 1
