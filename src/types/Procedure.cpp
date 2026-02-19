@@ -60,7 +60,7 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		if (args.size() != 2 || args[0].type != Variable::LIST) {
 			return ExecResult::err("APPEND expects a list and a value.");
 		}
-		args[0].list->push_back(args[1]);
+		args[0].list->emplace_back(args[1]);
 		return ExecResult::normal();
 	} 
 	else if (name == "REMOVE") {	// REMOVE(aList, i)
@@ -100,7 +100,20 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 
 		return ExecResult::ret(Variable::makeString(*args[0].string + *args[1].string));
 	}
+	else if (name == "SUBSTRING") { // SUBSTRING(text, start, end)
+		if (!ctx.qcExtensionsEnabled)
+			return ExecResult::err("SUBSTRING is only available when QC extensions are enabled.");
 
+		if (args.size() != 3 || args[0].type != Variable::STRING || args[1].type != Variable::NUMBER || args[2].type != Variable::NUMBER)
+			return ExecResult::err("SUBSTRING expects a string and two number arguments.");
+
+		const std::string& text = *args[0].string;
+		int start = (int)args[1].number;
+		int end = (int)args[2].number;
+		if (start < 1 || end > text.size() + 1 || start > end)
+			return ExecResult::err("SUBSTRING indices out of bounds.");
+		return ExecResult::ret(Variable::makeString(text.substr(start - 1, end - start)));
+	}
 
 	else { // User-defined procedure
 		Variable& var = ctx.resolveVariable(name);
@@ -111,9 +124,11 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 				args.begin(),
 				args.begin() + std::min(args.size(), proc.parameters.size())
 			);
+			userArgs.reserve(proc.parameters.size());
 
 			CompilerContext localCtx;
 			localCtx.parent = &ctx;
+			localCtx.qcExtensionsEnabled = ctx.qcExtensionsEnabled;
 			for (size_t i = 0; i < userArgs.size(); ++i) {
 				localCtx.variables[proc.parameters[i]] = userArgs[i];
 			}

@@ -28,6 +28,86 @@ Variable Variable::makeBoolean(bool b) {
 	return var;
 }
 
+Variable Variable::makeList(const std::vector<Variable>& l) {
+	Variable var{};
+	var.type = LIST;
+	var.list = new std::vector<Variable>(l);
+	return var;
+}
+
+Variable Variable::makeProcedure(const Procedure& p) {
+	Variable var{};
+	var.type = PROCEDURE;
+	var.procedure = new Procedure(p);
+	return var;
+}
+
+Variable Variable::makeNone(const CompilerContext& ctx) {
+	Variable var{};
+	if (!ctx.qcExtensionsEnabled) {
+		var.type = NUMBER;
+		var.number = 0;
+	}
+	else var.type = NONE;
+	return var;
+}
+
+
+
+bool Variable::worksAs(Type expected) const {
+	switch (expected) {
+	case NONE:
+		return type == NONE || (type == NUMBER && number == 0) || (type == STRING && string->empty());
+	case NUMBER:
+		switch (type) {
+		case NUMBER:
+		case BOOLEAN:
+			return true;
+		case STRING:
+			try {
+				std::stod(*string);
+				return true;
+			}
+			catch (...) {
+				return false;
+			}
+		default:
+			return false;
+		}
+	case STRING:
+		return type == STRING || type == NUMBER || type == BOOLEAN;
+	case BOOLEAN:
+		return type == BOOLEAN || type == NUMBER || type == STRING;
+	case LIST:
+		return type == LIST;
+	case PROCEDURE:
+		return type == PROCEDURE;
+	default:
+		return false;
+	}
+}
+
+double Variable::toNumber() const {
+	switch (type) {
+		case NUMBER:
+			return number;
+		case BOOLEAN:
+			return boolean ? 1 : 0;
+		case STRING:
+			try {
+				return std::stod(*string);
+			} catch (...) {
+				std::cerr << "Error: Cannot convert string to number." << std::endl;
+				exit(1);
+			}
+		case NONE:
+			return 0;
+		default:
+			std::cerr << "Error: Cannot convert variable to number." << std::endl;
+			exit(1);
+	}
+}
+
 std::string Variable::toString() const {
 	switch (type) {
 		case NONE:
@@ -79,29 +159,6 @@ bool Variable::toBoolean() const {
 		default:
 			return false;
 	}
-}
-
-Variable Variable::makeList(const std::vector<Variable>& l) {
-	Variable var{};
-	var.type = LIST;
-	var.list = new std::vector<Variable>(l);
-	return var;
-}
-
-Variable Variable::makeProcedure(const Procedure& p) {
-	Variable var{};
-	var.type = PROCEDURE;
-	var.procedure = new Procedure(p);
-	return var;
-}
-
-Variable Variable::makeNone(const CompilerContext& ctx) {
-	Variable var{};
-	if (!ctx.qcExtensionsEnabled) {
-		var.type = NUMBER;
-		var.number = 0;
-	} else var.type = NONE;
-	return var;
 }
 
 Variable Variable::copyFrom(const Variable& other) {

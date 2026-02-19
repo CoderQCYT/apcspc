@@ -23,6 +23,7 @@ struct Variable {
 		Procedure* procedure;
 	};
 
+
 	static Variable makeNone(const CompilerContext& ctx);
 	static Variable makeNumber(const double n);
 	static Variable makeString(const std::string& s);
@@ -30,6 +31,8 @@ struct Variable {
 	static Variable makeList(const std::vector<Variable>& l);
 	static Variable makeProcedure(const Procedure& p);
 
+	bool worksAs(Type expected) const;
+	double toNumber() const;
 	std::string toString() const;
 	bool toBoolean() const;
 

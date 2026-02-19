@@ -151,7 +151,8 @@ ExecResult runBlock(CompilerContext& ctx, const std::vector<std::string>& lines)
 			}
 			const std::vector<std::string> block(lines.begin() + blockStart, lines.begin() + blockEnd);
 			const std::string countString = trim(line.substr(6, timesPos - 6));
-			for (size_t count = 0; count < evaluateExpr(ctx, countString).number; ++count) {
+			const int target = evaluateExpr(ctx, countString).number;
+			for (size_t count = 0; count < target; ++count) {
 				ExecResult r = runBlock(ctx, block);
 				if (r.signal != ExecSignal::None)
 					return r;
