@@ -9,6 +9,8 @@
 #include <iostream>
 #include <random>
 
+std::random_device rd;
+
 ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const std::vector<Variable>& args) {
 	if (name == "DISPLAY") {		// DISPLAY(value)
 		if (ctx.qcExtensionsEnabled) { // All good programming languages create a new line when they're done.
@@ -40,7 +42,6 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		}
 		double a = args[0].number;
 		double b = args[1].number;
-		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<> dis((int)a, (int)b);
 		return ExecResult::ret(Variable::makeNumber(dis(gen)));
