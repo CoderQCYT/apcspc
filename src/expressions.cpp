@@ -90,12 +90,12 @@ static bool isIdentityPart(char c) {
 	return std::isalnum((unsigned char)c) || c == '_';
 }
 
-static Token peek() {
+static const Token& peek() {
 	if (pos < tokens.size()) return tokens[pos];
 	return Token{ TokenType::End, "" };
 }
-static Token advance() {
-	Token t = peek();
+static const Token& advance() {
+	const Token& t = peek();
 	if (pos < tokens.size()) ++pos;
 	return t;
 }
@@ -156,6 +156,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 			(c == '.' && i + 1 < expr.size() && std::isdigit((unsigned char)expr[i + 1]))) {
 
 			std::string number;
+			number.reserve(16);
 			bool sawDot = false;
 
 			while (i < expr.size()) {
@@ -408,29 +409,16 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expr->children.emplace_back(parseExpr(10, ctx));
 			return expr;
 		}
-		case TokenType::Subtract: {
+		case TokenType::Subtract:
+		case TokenType::Not: {
 			Expr* expr = new Expr;
 			expr->type = ExprType::Unary;
 			expr->op = token.type;
-			expr->children.push_back(parseExpr(15, ctx));
+			expr->children.emplace_back(parseExpr(15, ctx));
 			return expr;
 		}
-		case TokenType::Multiply: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(20, ctx));
-			return expr;
-		}
-		case TokenType::Divide: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(20, ctx));
-			return expr;
-		}
+		case TokenType::Multiply:
+		case TokenType::Divide:
 		case TokenType::Modulo: {
 			Expr* expr = new Expr;
 			expr->type = ExprType::Binary;
@@ -439,14 +427,7 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expr->children.emplace_back(parseExpr(20, ctx));
 			return expr;
 		}
-		case TokenType::And: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(5, ctx));
-			return expr;
-		}
+		case TokenType::And:
 		case TokenType::Or: {
 			Expr* expr = new Expr;
 			expr->type = ExprType::Binary;
@@ -455,53 +436,11 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			expr->children.emplace_back(parseExpr(5, ctx));
 			return expr;
 		}
-		case TokenType::Not: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Unary;
-			expr->op = token.type;
-			expr->children.emplace_back(parseExpr(15, ctx));
-			return expr;
-		}
-		case TokenType::Equal: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
-			return expr;
-		}
-		case TokenType::NotEqual: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
-			return expr;
-		}
-		case TokenType::Greater: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
-			return expr;
-		}
-		case TokenType::Less: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
-			return expr;
-		}
-		case TokenType::GreaterEqual: {
-			Expr* expr = new Expr;
-			expr->type = ExprType::Binary;
-			expr->op = token.type;
-			expr->children.emplace_back(new Expr);
-			expr->children.emplace_back(parseExpr(7, ctx));
-			return expr;
-		}
+		case TokenType::Equal:
+		case TokenType::NotEqual:
+		case TokenType::Greater:
+		case TokenType::Less:
+		case TokenType::GreaterEqual:
 		case TokenType::LessEqual: {
 			Expr* expr = new Expr;
 			expr->type = ExprType::Binary;
