@@ -55,35 +55,36 @@ Variable Variable::makeNone(const CompilerContext& ctx) {
 
 
 bool Variable::worksAs(Type expected) const {
+	if (type == expected) return true;
 	switch (expected) {
-	case NONE:
-		return type == NONE || (type == NUMBER && number == 0) || (type == STRING && string->empty());
-	case NUMBER:
-		switch (type) {
+		case NONE:
+			return type == NONE || (type == NUMBER && number == 0) || (type == STRING && string->empty());
 		case NUMBER:
-		case BOOLEAN:
-			return true;
-		case STRING:
-			try {
-				std::stod(*string);
+			switch (type) {
+			case NUMBER:
+			case BOOLEAN:
 				return true;
-			}
-			catch (...) {
+			case STRING:
+				try {
+					std::stod(*string);
+					return true;
+				}
+				catch (...) {
+					return false;
+				}
+			default:
 				return false;
 			}
+		case STRING:
+			return type == STRING || type == NUMBER || type == BOOLEAN;
+		case BOOLEAN:
+			return type == BOOLEAN || type == NUMBER || type == STRING;
+		case LIST:
+			return type == LIST;
+		case PROCEDURE:
+			return type == PROCEDURE;
 		default:
 			return false;
-		}
-	case STRING:
-		return type == STRING || type == NUMBER || type == BOOLEAN;
-	case BOOLEAN:
-		return type == BOOLEAN || type == NUMBER || type == STRING;
-	case LIST:
-		return type == LIST;
-	case PROCEDURE:
-		return type == PROCEDURE;
-	default:
-		return false;
 	}
 }
 
