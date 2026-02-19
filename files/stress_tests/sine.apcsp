@@ -1,0 +1,79 @@
+PROCEDURE SIN(x)
+{
+  // epsilon: desired absolute tolerance (e.g. 1e-8)
+  // reduce x into range [-pi, pi] to improve convergence
+  pi ← 3.141592653589793
+  twoPi ← 2 * pi
+
+  // Bring x into [-pi, pi]
+  done ← false
+  REPEAT UNTIL done
+  {
+    IF x > pi
+    {
+      x ← x - twoPi
+    }
+    ELSE
+    {
+      IF x < -pi
+      {
+        x ← x + twoPi
+      }
+      ELSE
+      {
+        done ← true
+      }
+    }
+  }
+
+  // initialize Taylor-series recurrence
+  term ← x            // first term: x^(2*0+1)/(2*0+1)! = x
+  sum ← x
+  k ← 1
+  stop ← false
+
+  REPEAT UNTIL stop
+  {
+    // recurrence: term_k = -term_{k-1} * x^2 / ((2*k)*(2*k+1))
+    denom ← (2 * k) * (2 * k + 1)
+    term ← (-1) * term * x * x / denom
+    sum ← sum + term
+
+    // absolute value of term (compute without built-in ABS)
+    IF term < 0
+    {
+      termAbs ← -term
+    }
+    ELSE
+    {
+      termAbs ← term
+    }
+
+    // stop when the new term is small enough
+    IF termAbs < 0.00000000000001
+    {
+      stop ← true
+    }
+    ELSE
+    {
+      k ← k + 1
+      // optional safety guard to prevent infinite loop:
+      IF k > 1000
+      {
+        stop ← true
+      }
+    }
+  }
+
+  RETURN sum
+}
+
+DISPLAY(" ") // This is to work around the extra space added at everything.
+REPEAT UNTIL false
+{
+  DISPLAY("sin of how many radians?:")
+  x ← INPUT("")
+  DISPLAY("Answer:")
+  DISPLAY(SIN(x, 0.00000001))
+  DISPLAY("\n ")
+}
