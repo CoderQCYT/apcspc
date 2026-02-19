@@ -514,57 +514,64 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			Expr* rightExpr = expr->children[1];
 
 			if (expr->op == TokenType::Assignment) {
+
+				// Indexed assignment
 				if (leftExpr->type == ExprType::Index) {
+
 					Expr* baseExpr = leftExpr->children[0];
-					Variable& leftVal = ctx.resolveVariable(baseExpr->variable);
-					Variable indexVal = evalExpr(leftExpr->children[1], ctx);
+					Expr* indexExpr = leftExpr->children[1];
 
-					if (leftExpr->type == ExprType::Index) {
+					if (baseExpr->type != ExprType::Identifier) {
+						std::cerr << "Indexed assignment requires a variable." << std::endl;
+						exit(1);
+					}
 
-						Expr* baseExpr = leftExpr->children[0];
-						Expr* indexExpr = leftExpr->children[1];
+					Variable& baseVal = ctx.resolveVariable(baseExpr->variable);
+					Variable  indexVal = evalExpr(indexExpr, ctx);
 
-						if (baseExpr->type != ExprType::Identifier) {
-							std::cerr << "Indexed assignment requires a variable." << std::endl;
-							exit(1);
-						}
+					if (indexVal.type != Variable::NUMBER) {
+						std::cerr << "Index must be a number." << std::endl;
+						exit(1);
+					}
 
-						Variable& leftVal = ctx.resolveVariable(baseExpr->variable);
-						Variable indexVal = evalExpr(indexExpr, ctx);
+					int index = static_cast<int>(indexVal.number);
 
-						if (leftVal.type != Variable::LIST ||
-							indexVal.type != Variable::NUMBER) {
-							std::cerr << "Invalid index assignment." << std::endl;
-							exit(1);
-						}
+					// List assignment
+					if (baseVal.type == Variable::LIST) {
 
-						int index = (int)indexVal.number;
-						if (index < 1 || index > leftVal.list->size()) {
+						if (index < 1 || index > baseVal.list->size()) {
 							std::cerr << "List index out of bounds." << std::endl;
 							exit(1);
 						}
-						Variable rightVal = evalExpr(rightExpr, ctx);
-						(*leftVal.list)[index - 1] = rightVal;
-						return rightVal;
-					} else if (leftVal.type == Variable::STRING && indexVal.type == Variable::NUMBER) {
-						Variable rightVal = evalExpr(rightExpr, ctx);
 
-						int index = (int)indexVal.number;
-						if (index < 1 || index > leftVal.string->size()) {
+						Variable rightVal = evalExpr(rightExpr, ctx);
+						(*baseVal.list)[index - 1] = rightVal;
+						return rightVal;
+					}
+
+					// String assignment
+					if (baseVal.type == Variable::STRING) { // Technically not part of the reference sheet, but this is needed.
+
+						if (index < 1 || index > baseVal.string->size()) {
 							std::cerr << "String index out of bounds." << std::endl;
 							exit(1);
 						}
-						std::string newStr = *leftVal.string;
+
+						Variable rightVal = evalExpr(rightExpr, ctx);
+
+						std::string newStr = *baseVal.string;
 						newStr[index - 1] = rightVal.toString()[0];
-						leftVal.string->assign(newStr);
+						baseVal.string->assign(newStr);
+
 						return rightVal;
-					} else {
-						std::cerr << "Index assignment requires a list or string on the left and a number on the right." << std::endl;
-						exit(1);
 					}
-					
+
+					std::cerr << "Index assignment requires a list or string." << std::endl;
+					exit(1);
 				}
-				else if (leftExpr->type != ExprType::Identifier) {
+
+				// Normal variable assignment
+				if (leftExpr->type != ExprType::Identifier) {
 					std::cerr << "Left-hand side of assignment must be a variable." << std::endl;
 					exit(1);
 				}
