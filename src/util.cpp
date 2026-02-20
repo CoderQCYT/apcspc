@@ -1,5 +1,6 @@
 #include "util.h"
 
+// string_view avoids unnecessary copying
 std::string_view trim_view(std::string_view s) {
     size_t start = 0;
     size_t end = s.size();
