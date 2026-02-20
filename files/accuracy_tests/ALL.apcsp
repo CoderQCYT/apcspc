@@ -144,7 +144,7 @@ DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m6\x1B[0m")
 DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
 DISPLAY(count)
 
-DISPLAY("\n\x1B[36m-- RANDOM Range Test (1–3) --\x1B[0m")
+DISPLAY("\n\x1B[36m-- RANDOM Range Test (1-3) --\x1B[0m")
 rand ← RANDOM(1, 3)
 DISPLAY("\n\x1B[1m\x1B[33mEXPECTED:\x1B[0m \x1B[32m1 OR 2 OR 3\x1B[0m")
 DISPLAY("\n\x1B[1m\x1B[36mRESULT:\x1B[0m  ")
