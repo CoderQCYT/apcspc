@@ -1,6 +1,5 @@
 PROCEDURE SIN(x)
 {
-  // epsilon: desired absolute tolerance (e.g. 1e-8)
   // reduce x into range [-pi, pi] to improve convergence
   pi ← 3.141592653589793
   twoPi ← 2 * pi
@@ -74,6 +73,6 @@ REPEAT UNTIL false
   DISPLAY("sin of how many radians?:")
   x ← INPUT("")
   DISPLAY("Answer:")
-  DISPLAY(SIN(x, 0.00000001))
+  DISPLAY(SIN(x))
   DISPLAY("\n ")
 }
