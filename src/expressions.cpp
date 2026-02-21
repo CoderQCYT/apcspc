@@ -67,9 +67,9 @@ enum class ExprType: char {
 
 struct Expr {
 	ExprType type = ExprType::None;
-	
-	Variable value; // for literals
 	TokenType op; // for operators
+
+	Variable value; // for literals
 	std::string variable; // for identifiers
 	std::vector<Expr*> children = {};
 };
