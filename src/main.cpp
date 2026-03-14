@@ -41,6 +41,7 @@ static void runCode(const std::string& code) {
 
 static void shell() {
 	std::cout << "apcspc shell" << std::endl;
+	std::cout << "WARNING: The shell is a tiny bit unstable, run a file with apcsp <filename>" << std::endl;
 	std::vector<std::string> lines;
 	int depth = 0;
 
@@ -58,9 +59,14 @@ static void shell() {
 		}
 
 		std::getline(std::cin, input);
-		lines.push_back(input);
 
-		depth += getBlockDepth(input);
+		std::string trimmed_input = trim(input);
+		if (trimmed_input == "exit" || trimmed_input == "EXIT" || trimmed_input == "EXIT()")
+			return;
+
+		lines.push_back(trimmed_input);
+
+		depth += getBlockDepth(trimmed_input);
 		if (depth > 0) goto reinput;
 
 		try {
