@@ -7,6 +7,16 @@
 #include <sstream>
 #endif
 
+Variable Variable::makeNone(const CompilerContext& ctx) {
+	Variable var{};
+	if (!ctx.qcExtensionsEnabled) {
+		var.type = NUMBER;
+		var.number = 0;
+	}
+	else var.type = NONE;
+	return var;
+}
+
 Variable Variable::makeNumber(double n) {
 	Variable var{};
 	var.type = NUMBER;
@@ -39,16 +49,6 @@ Variable Variable::makeProcedure(const Procedure& p) {
 	Variable var{};
 	var.type = PROCEDURE;
 	var.procedure = new Procedure(p);
-	return var;
-}
-
-Variable Variable::makeNone(const CompilerContext& ctx) {
-	Variable var{};
-	if (!ctx.qcExtensionsEnabled) {
-		var.type = NUMBER;
-		var.number = 0;
-	}
-	else var.type = NONE;
 	return var;
 }
 
