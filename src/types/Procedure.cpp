@@ -92,19 +92,13 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		}
 		return ExecResult::ret(Variable::makeNumber(args[0].list->size()));
 	} 
-	else if (name == "CONCAT") { // CONCAT(aString, bString) [QC EXTENSIONS ONLY]
-		if (!ctx.qcExtensionsEnabled)
-			return ExecResult::err("CONCAT is only available when QC extensions are enabled.");
-
+	else if (name == "CONCAT") { // CONCAT(aString, bString)
 		if (args.size() != 2 || args[0].type != Variable::STRING || args[1].type != Variable::STRING)
 			return ExecResult::err("CONCAT expects two string arguments.");
 
 		return ExecResult::ret(Variable::makeString(*args[0].string + *args[1].string));
 	}
 	else if (name == "SUBSTRING") { // SUBSTRING(text, start, end)
-		if (!ctx.qcExtensionsEnabled)
-			return ExecResult::err("SUBSTRING is only available when QC extensions are enabled.");
-
 		if (args.size() != 3 || args[0].type != Variable::STRING || args[1].type != Variable::NUMBER || args[2].type != Variable::NUMBER)
 			return ExecResult::err("SUBSTRING expects a string and two number arguments.");
 
