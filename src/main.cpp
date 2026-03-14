@@ -14,8 +14,8 @@
 #include <windows.h>
 #endif
 
+CompilerContext ctx;
 static void runCode(const std::string& code) {
-	CompilerContext ctx;
 	std::vector<std::string> lines;
 
 	size_t start = 0;
@@ -39,12 +39,58 @@ static void runCode(const std::string& code) {
 	clearExprCache();
 }
 
+static void shell() {
+	std::cout << "apcspc shell" << std::endl;
+	std::vector<std::string> lines;
+	int depth = 0;
+
+#ifdef WIN32
+	SetConsoleCP(CP_UTF8);
+#endif
+
+	while (true) {	
+		std::cout << "> ";
+		std::string input;
+
+	reinput:
+		if (depth > 0) {
+			std::cout << ". ";
+		}
+
+		std::getline(std::cin, input);
+		lines.push_back(input);
+
+		depth += getBlockDepth(input);
+		if (depth > 0) goto reinput;
+
+		try {
+			ExecResult result = runBlock(ctx, lines);
+
+			if (result.signal == ExecSignal::Return)
+				std::cout << result.variable.toString() << std::endl;
+			else if (result.signal == ExecSignal::Error)
+				std::cerr << "Error: " << result.variable.toString() << std::endl;
+		}
+		catch (std::exception e) {
+			std::cerr << "Error: " << e.what() << std::endl;
+		}
+
+		lines.clear();
+		std::cout << std::endl;
+	}
+
+}
+
 int main(int argc, char* argv[]) {
 	// load code from file
 	if (argc < 2) {
+		/*
 		std::cerr << "Error: No input file specified." << std::endl;
 		std::cerr << "Usage: apcspc <filename>" << std::endl;
 		return 1;
+		*/
+		shell();
+		return 0;
 	}
 
 	std::ifstream file(argv[1]);

@@ -1,5 +1,19 @@
 #include "util.h"
 
+int getBlockDepth(std::string blockLine, int initDepth) {
+	int blockDepth = initDepth;
+
+	blockLine = trim(blockLine);
+	if (blockLine == "{") blockDepth++;
+	else if (blockLine == "}") blockDepth--;
+
+	return blockDepth;
+}
+
+int getBlockDepth(std::string blockLine) {
+    return getBlockDepth(blockLine, 0);
+}
+
 // string_view avoids unnecessary copying
 std::string_view trim_view(std::string_view s) {
     size_t start = 0;

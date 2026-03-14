@@ -10,6 +10,5 @@ Variable& CompilerContext::resolveVariable(const std::string& name) {
         return parent->resolveVariable(name);
     }
 
-    std::cerr << "Undefined variable: " << name << std::endl;
-    exit(1);
+    throw std::runtime_error("Undefined variable: " + name);
 }

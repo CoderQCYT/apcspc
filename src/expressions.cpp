@@ -198,8 +198,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 				if (current == '\\') {
 					++i;
 					if (i >= expr.size()) {
-						std::cerr << "Invalid escape sequence.\n";
-						exit(1);
+						throw std::runtime_error("Invalid escape sequence.");
 					}
 
 					char esc = expr[i];
@@ -213,8 +212,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 
 					case 'x': {  // \xXX
 						if (i + 2 >= expr.size()) {
-							std::cerr << "Invalid \\x escape.\n";
-							exit(1);
+							throw std::runtime_error("Invalid \\x escape.");
 						}
 
 						std::string hex = expr.substr(i + 1, 2);
@@ -231,8 +229,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 					}
 
 					default:
-						std::cerr << "Unknown escape sequence: \\" << esc << "\n";
-						exit(1);
+						throw std::runtime_error("Unknown escape sequence: \\" + esc);
 					}
 				}
 				else {
@@ -243,8 +240,7 @@ static std::vector<Token> tokenize(const std::string& _expr) {
 			}
 
 			if (i >= expr.size() || expr[i] != '"') {
-				std::cerr << "Unterminated string literal.\n";
-				exit(1);
+				throw std::runtime_error("Unterminated string literal.");
 			}
 
 			out.emplace_back(TokenType::String, str);
@@ -420,8 +416,7 @@ static Expr* nud(const Token& token, CompilerContext& ctx) {
 			return expr;
 		}
 		default:
-			std::cerr << "Unexpected token." << std::endl;	
-			exit(1);
+			throw std::runtime_error("Unexpected token.");
 	}
 }
 
@@ -501,8 +496,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			}
 			ExecResult result = callProcedure(ctx, expr->variable, args);
 			if (result.signal == ExecSignal::Error) {
-				std::cerr << "Error calling procedure " << expr->variable << ": " << result.variable.toString() << std::endl;
-				exit(1);
+				throw std::runtime_error("Error calling procedure " + expr->variable + ": " + result.variable.toString());
 			}
 			if (result.signal == ExecSignal::Return) {
 				return result.variable;
@@ -522,16 +516,14 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					Expr* indexExpr = leftExpr->children[1];
 
 					if (baseExpr->type != ExprType::Identifier) {
-						std::cerr << "Indexed assignment requires a variable." << std::endl;
-						exit(1);
+						throw std::runtime_error("Indexed assignment requires a variable.");
 					}
 
 					Variable& baseVal = ctx.resolveVariable(baseExpr->variable);
 					Variable  indexVal = evalExpr(indexExpr, ctx);
 
 					if (indexVal.type != Variable::NUMBER) {
-						std::cerr << "Index must be a number." << std::endl;
-						exit(1);
+						throw std::runtime_error("Index must be a number.");
 					}
 
 					int index = static_cast<int>(indexVal.number);
@@ -540,8 +532,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					if (baseVal.type == Variable::LIST) {
 
 						if (index < 1 || index > baseVal.list->size()) {
-							std::cerr << "List index out of bounds." << std::endl;
-							exit(1);
+							throw std::runtime_error("List index out of bounds.");
 						}
 
 						Variable rightVal = evalExpr(rightExpr, ctx);
@@ -553,8 +544,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					if (baseVal.type == Variable::STRING) { // Technically not part of the reference sheet, but this is needed.
 
 						if (index < 1 || index > baseVal.string->size()) {
-							std::cerr << "String index out of bounds." << std::endl;
-							exit(1);
+							throw std::runtime_error("String index out of bounds.");
 						}
 
 						Variable rightVal = evalExpr(rightExpr, ctx);
@@ -566,14 +556,12 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 						return rightVal;
 					}
 
-					std::cerr << "Index assignment requires a list or string." << std::endl;
-					exit(1);
+					throw std::runtime_error("Index assignment requires a list or string.");
 				}
 
 				// Normal variable assignment
 				if (leftExpr->type != ExprType::Identifier) {
-					std::cerr << "Left-hand side of assignment must be a variable." << std::endl;
-					exit(1);
+					throw std::runtime_error("Left-hand side of assignment must be a variable.");
 				}
 
 				Variable rightVal = evalExpr(rightExpr, ctx);
@@ -620,8 +608,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					return Variable::makeBoolean(leftVal.toString() != rightVal.toString());
 			}
 			
-			std::cerr << "Error in binary expression." << std::endl;
-			exit(1);
+			throw std::runtime_error("Error in binary expression.");
 		}
 		case ExprType::Unary: {
 			Expr* child = expr->children[0];
@@ -632,13 +619,11 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 					return Variable::makeBoolean(!val.toBoolean());
 				case TokenType::Subtract:
 					if (val.type != Variable::NUMBER) {
-						std::cerr << "'-' requires a number." << std::endl;
-						exit(1);
+						throw std::runtime_error("'-' requires a number.");
 					}
 					return Variable::makeNumber(-val.number);
 				default:
-					std::cerr << "Error in unary expression." << std::endl;
-					exit(1);
+					throw std::runtime_error("Error in unary expression.");
 			}
 		}
 		case ExprType::Index: {
@@ -646,32 +631,28 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			Variable rightVal = evalExpr(expr->children[1], ctx);
 
 			if (rightVal.type != Variable::NUMBER) {
-				std::cerr << "Index must be a number." << std::endl;
-				exit(1);
+				throw std::runtime_error("Index must be a number.");
 			}
 
 			int index = (int)rightVal.number;
 			if (leftVal.type == Variable::LIST) {
 				int size = (int)leftVal.list->size();
 				if (index < 1 || index > size) {
-					std::cerr << "List index out of bounds." << std::endl;
-					exit(1);
+					throw std::runtime_error("List index out of bounds.");
 				}
 				return (*leftVal.list)[index - 1];
 			}
 			else if (leftVal.type == Variable::STRING) {
 				int size = (int)leftVal.string->size();
 				if (index < 1 || index > size) {
-					std::cerr << "String index out of bounds." << std::endl;
-					exit(1);
+					throw std::runtime_error("String index out of bounds.");
 				}
 
 				return Variable::makeString(
 					std::string(1, (*leftVal.string)[index - 1])
 				);
 			} else {
-				std::cerr << "Indexing requires a list or string." << std::endl;
-				exit(1);
+				throw std::runtime_error("Indexing requires a list or string.");
 			}
 		}
 		case ExprType::List: {
@@ -685,8 +666,7 @@ static Variable evalExpr(Expr* expr, CompilerContext& ctx) {
 			return Variable::makeList(values);
 		}
 		default:
-			std::cerr << "Unknown expression type." << std::endl;
-			exit(1);
+			throw std::runtime_error("Unknown expression type.");
 		}
 }
 
