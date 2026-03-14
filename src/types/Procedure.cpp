@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include <random>
+#include <thread>
+#include <chrono>
 
 std::random_device rd;
 
@@ -108,6 +110,13 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		if (start < 1 || end > text.size() + 1 || start > end)
 			return ExecResult::err("SUBSTRING indices out of bounds.");
 		return ExecResult::ret(Variable::makeString(text.substr(start - 1, end - start)));
+	}
+	else if (name == "SLEEP") {		// SLEEP(seconds)
+		if (args.size() != 1 || args[0].type != Variable::NUMBER)
+			return ExecResult::err("SLEEP expects a number argument.");
+
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+		return ExecResult::normal();
 	}
 
 	else { // User-defined procedure
