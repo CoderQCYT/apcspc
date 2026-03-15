@@ -117,7 +117,7 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 		if (args.size() != 1 || args[0].type != Variable::NUMBER)
 			return ExecResult::err("SLEEP expects a number argument.");
 
-		std::this_thread::sleep_for(std::chrono::seconds(3));
+		std::this_thread::sleep_for(std::chrono::duration<double>(args[0].number));
 		return ExecResult::normal();
 	}
 
