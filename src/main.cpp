@@ -64,6 +64,8 @@ static void shell() {
 		std::string trimmed_input = trim(input);
 		if (trimmed_input == "exit" || trimmed_input == "EXIT" || trimmed_input == "EXIT()")
 			return;
+		else if (trimmed_input.starts_with("//"))
+			continue;
 
 		lines.push_back(trimmed_input);
 
