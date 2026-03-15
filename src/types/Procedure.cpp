@@ -22,6 +22,8 @@ ExecResult callProcedure(CompilerContext& ctx, const std::string& name, const st
 			std::cout << std::endl;
 		}
 		else {
+			if (args.size() != 1)
+				return ExecResult::err("DISPLAY expects a string argument.");
 			std::cout << args[0].toString() << " ";
 		}
 		return ExecResult::normal();
