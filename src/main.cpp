@@ -78,7 +78,7 @@ static void shell() {
 			if (result.signal == ExecSignal::Return)
 				std::cout << result.variable.toString() << std::endl;
 			else if (result.signal == ExecSignal::Error)
-				std::cerr << "Error: " << result.variable.toString() << std::endl;
+				std::cerr << result.variable.toString() << std::endl;
 		}
 		catch (std::exception e) {
 			std::cerr << "Error: " << e.what() << std::endl;
