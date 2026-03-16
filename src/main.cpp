@@ -42,7 +42,7 @@ static void runCode(const std::string& code) {
 static void shell() {
 	std::cout << "apcspc shell" << std::endl;
 	std::cout << "WARNING: The shell is a tiny bit unstable, run a file with apcsp <filename>" << std::endl;
-	std::cout << "Hit Ctrl+C to exit" << std::endl;
+	std::cout << "Run \"exit\" to exit" << std::endl;
 	std::vector<std::string> lines;
 	int depth = 0;
 
